@@ -1,0 +1,32 @@
+[
+{
+    "Name": "Google",
+    "Phone": "09999894538",
+    "Description": "Google  Account"
+},
+{
+    "Name": "Apple",
+    "Phone": "453242342",
+    "Description": "Apple  Account"
+},
+{
+    "Name": "Amazon",
+    "Phone": "876445677",
+    "Description": "Amazon  Account"
+},
+{
+    "Name": "Nike",
+    "Phone": "9756346566",
+    "Description": "Nike  Account"
+},
+{
+    "Name": "JP Morgan",
+    "Phone": "967466",
+    "Description": "JP Morgan  Account"
+},
+{
+   "Name": "Tesla",
+    "Phone": "68756445",
+    "Description": "Tesla  Account"
+}
+]

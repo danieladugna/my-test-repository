@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="delete-2-salesforceFlow" doc:id="0ee8b948-2f4a-49b5-bf3d-9b884bbf1baa" >
+		<http:listener doc:name="Listener" doc:id="38168081-6b72-4590-90b3-2d3e5bd1e0f0" config-ref="HTTP_Listener_config" path="delete2"/>
+		<salesforce:delete doc:name="Delete" doc:id="5c6a2f3f-4bc8-4670-a3e2-e72a773c0591" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="72a90aea-aa8e-4a2a-8985-aece22c3f1b5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

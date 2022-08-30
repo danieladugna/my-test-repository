@@ -1,0 +1,26 @@
+[
+    {
+    "firstName": "Contact Info",
+    "lastName": "One",
+    "email": "one@contact.com",
+    "mobile": "123456"
+    },
+    {
+        "firstName": "Contact Info2",
+        "lastName": "Two",
+        "email": "two@contact.com",
+        "mobile": "789123"
+    },
+    {
+        "firstName": "Contact Info3",
+        "lastName": "Three",
+        "email": "barr_tim@grandhotels.com",
+        "mobile": "456789"
+    },
+    {
+        "firstName": "Contact Info4",
+        "lastName": "Four",
+        "email": "four@contact.com",
+        "mobile": "6789876"
+    }
+]

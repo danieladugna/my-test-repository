@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="451c7732-5aed-4edd-bf6e-025b3ffcc910" >
+		<http:request-connection host="0.0.0.0" port="8081" />
+	</http:request-config>
+	<flow name="integrationFlow" doc:id="2c9b108c-2e56-4cf4-8bb1-0def32603052" >
+		<http:listener doc:name="Listener" doc:id="b9836610-a6c9-417e-897e-2df5bb94c3b4" config-ref="HTTP_Listener_config" path="integration"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="96ee739a-e6c8-476d-bc4d-c7cee15c3a1d" >
+			<route >
+				<http:request method="GET" doc:name="Request" doc:id="3183d4ac-9886-4203-80bf-cb7df68ccfc3" url="https://mulesoft.s3-us-west-1.amazonaws.com/userdata.csv" config-ref="HTTP_Request_configuration"/>
+				<set-variable value="#[payload]" doc:name="csv1" doc:id="43f4b3f9-39ab-4a5b-b008-9705ef234c91" variableName="csv1"/>
+			</route>
+			<route >
+				<http:request method="GET" doc:name="Request" doc:id="1fb1f283-57c3-4116-b7f6-1732fff3efaa" url="https://mulesoft.s3-us-west-1.amazonaws.com/moreuserdata.csv" config-ref="HTTP_Request_configuration"/>
+				<set-variable value="#[payload]" doc:name="csv2" doc:id="9fce7e73-e536-4f97-a3e9-e9ccfc0a5bfe" variableName="csv2"/>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform Message" doc:id="cea13d1e-a937-48b5-ac38-200785f0a8bc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+output application/json
+---
+vars.csv1 map(item, index) ->{
+	FirstName: item.fname,
+	LastName: item.lname,
+	Email: item.email,
+	Company: item.company,
+	AnnualRevenue: vars.csv2.AnnualRevenue[indexOf(vars.csv2.uuid, item.uuid)],
+	Phone: vars.csv2.Phone[indexOf(vars.csv2.uuid, item.uuid)]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="bb275972-33b1-4c39-874b-d290151e40d0" >
+			<salesforce:create doc:name="Create" doc:id="a9aeacd6-f3db-4b79-b208-a1cc588c0531" config-ref="Salesforce_Config" type="Lead">
+				<salesforce:records ><![CDATA[#[[payload]]]]></salesforce:records>
+			</salesforce:create>
+			<logger level="INFO" doc:name="Logger" doc:id="674b5e8e-2912-43b8-a8f0-cb8e90f79c44" message="#[payload]"/>
+		</foreach>
+	</flow>
+</mule>

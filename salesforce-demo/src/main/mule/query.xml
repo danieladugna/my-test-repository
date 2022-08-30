@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="fe710fe1-e30f-4528-9c6a-d325d3d3de9b" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="5c6fdb46-50e9-4222-8b61-c7f8e50fb7b2" >
+		<salesforce:basic-connection username="test@daniel.com" password="Thomas11610" securityToken="vRfVPCcyIrTukVpZnHD6bc1WS" />
+	</salesforce:sfdc-config>
+	<flow name="salesforce-demoFlow" doc:id="3fa85f04-ba45-4748-8979-d2e387c02f02" >
+		<http:listener doc:name="Listener" doc:id="16eed58b-5396-49d5-8bee-a6d4c9b4b646" config-ref="HTTP_Listener_config" path="queryall"/>
+		<salesforce:query doc:name="Query" doc:id="ff3aba3f-4a8e-4e85-929b-06bebd5a9c69" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT AccountNumber,BillingCity,Description,Id,Name,Phone,ShippingCity FROM Account]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="ce5d9792-b1fe-413d-81bb-07cbe4cbc618" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

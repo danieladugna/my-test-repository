@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<flow name="broadcast-exerciseFlow" doc:id="b7fb1041-85fc-4dc9-9752-127f0b9a470a" >
+		<http:listener doc:name="Listener" doc:id="5bbb2624-5019-4056-a961-694343c300ff" config-ref="HTTP_Listener_config" path="exercise"/>
+		<salesforce:query doc:name="Query" doc:id="54537eb5-49ca-492b-a048-d623db8d662d" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT Id FROM Account]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="abc9ff7e-3890-435f-b0be-cb61329cd230" >
+			<route >
+				<ee:transform doc:name="Transform Message" doc:id="44129fa9-4ad6-432b-840e-9fc6d6208b15" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.Id]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<file:write doc:name="Write" doc:id="f240f9cf-904d-4651-8d3b-a8d96aefa19a" path="/Users/danieladugna/Working Files/5. Mule Files/1. Salesforce/query_file/account.json"/>
+				<ee:transform doc:name="Transform Message" doc:id="b61b85fc-7f71-42cc-9dcf-bc631b0238b7" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+---
+"Success"]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+			<route >
+				<ee:transform doc:name="Transform Message" doc:id="94a9a8f3-a8fd-4cf9-a73c-d4afb68470ed" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/csv
+---
+payload map(item, index) -> {
+	Id: item.Id
+	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<file:write doc:name="Write" doc:id="68a719d9-d3b6-4384-b16a-8d2a882414d7" path="/Users/danieladugna/Working Files/5. Mule Files/1. Salesforce/query_file/account_name.csv"/>
+				<ee:transform doc:name="Transform Message" doc:id="620bb194-47b9-4e3a-a2c1-9fb5e0ba422e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+---
+"Success"]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+		</scatter-gather>
+	</flow>
+</mule>

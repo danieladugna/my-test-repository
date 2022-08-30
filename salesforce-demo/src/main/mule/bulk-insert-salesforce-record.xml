@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="bulk-insert-salesforce-recordFlow" doc:id="6425c6db-58d9-41f7-8775-a21a1b6a6bd8" >
+		<http:listener doc:name="Listener" doc:id="cfdd122c-ac54-41b8-afd9-9efe5c8c6b44" config-ref="HTTP_Listener_config" path="bulkinsert"/>
+		<salesforce:create-job-bulk-api-v2 objectType="Account" operation="insert" doc:name="Create job bulk api v 2" doc:id="265f6468-4435-4ab2-a8b8-c356e13cf651" config-ref="Salesforce_Config" lineEnding="CRLF" externalIdFieldName="Id"/>
+		<ee:transform doc:name="Transform Message" doc:id="d52ba7ca-8826-4b27-9d18-a43cc07b2df8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

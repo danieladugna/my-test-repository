@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="account" format="json">
+      <types:shape format="weave" example="account.json"><![CDATA[%dw 2.0
+
+type account = Array<{|  Name: String,   Phone: String,   Description: String|}> {"example": "[{\\\"Name\\\":\\\"Google\\\",\\\"Phone\\\":\\\"09999894538\\\",\\\"Description\\\":\\\"Google  Account\\\"},{\\\"Name\\\":\\\"Apple\\\",\\\"Phone\\\":\\\"453242342\\\",\\\"Description\\\":\\\"Apple  Account\\\"},{\\\"Name\\\":\\\"Amazon\\\",\\\"Phone\\\":\\\"876445677\\\",\\\"Description\\\":\\\"Amazon  Account\\\"},{\\\"Name\\\":\\\"Nike\\\",\\\"Phone\\\":\\\"9756346566\\\",\\\"Description\\\":\\\"Nike  Account\\\"},{\\\"Name\\\":\\\"JP Morgan\\\",\\\"Phone\\\":\\\"967466\\\",\\\"Description\\\":\\\"JP Morgan  Account\\\"},{\\\"Name\\\":\\\"Tesla\\\",\\\"Phone\\\":\\\"68756445\\\",\\\"Description\\\":\\\"Tesla  Account\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="contacts" format="json">
+      <types:shape format="weave" example="contact.json"><![CDATA[%dw 2.0
+
+type contacts = Array<{|  firstName: String,   lastName: String,   email: String,   mobile: String|}> {"example": "[{\\\"firstName\\\":\\\"Contact Info\\\",\\\"lastName\\\":\\\"One\\\",\\\"email\\\":\\\"one@contact.com\\\",\\\"mobile\\\":\\\"123456\\\"},{\\\"firstName\\\":\\\"Contact Info2\\\",\\\"lastName\\\":\\\"Two\\\",\\\"email\\\":\\\"two@contact.com\\\",\\\"mobile\\\":\\\"789123\\\"},{\\\"firstName\\\":\\\"Contact Info3\\\",\\\"lastName\\\":\\\"Three\\\",\\\"email\\\":\\\"barr_tim@grandhotels.com\\\",\\\"mobile\\\":\\\"456789\\\"},{\\\"firstName\\\":\\\"Contact Info4\\\",\\\"lastName\\\":\\\"Four\\\",\\\"email\\\":\\\"four@contact.com\\\",\\\"mobile\\\":\\\"6789876\\\"}]"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#c8674863-625a-4afa-90ad-43d0d8dc9408">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="account"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#cde8f2ca-48e6-485b-8e45-5a8820d41a2e">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="contacts"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#9e7555c2-7666-4b60-b091-3821b7e37dd2"/>
+</types:mule>

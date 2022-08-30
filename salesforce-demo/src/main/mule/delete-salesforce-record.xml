@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="delete-salesforce-recordFlow" doc:id="620ad957-9584-452f-b00e-3c9814fa8f91" >
+		<http:listener doc:name="Listener" doc:id="3521eccb-2637-4082-ad9e-fbf34af26677" config-ref="HTTP_Listener_config" path="delete"/>
+		<salesforce:query doc:name="Query" doc:id="d42a42eb-71c2-4726-a5fe-5f9d55fee046" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[select Id
+FROM Account
+WHERE AccountNumber = ':accNumber']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"accNumber" : attributes.queryParams.account
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="ae383712-fc8d-4315-9104-4556bd6ea0ae" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[payload[0].Id]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:delete doc:name="Delete" doc:id="eef2fd51-0d0e-42a3-979a-5b957d33f030" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="b4093b39-4c13-431e-8506-23cbdcb64bf8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output text/plain
+---
+"deleted"]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

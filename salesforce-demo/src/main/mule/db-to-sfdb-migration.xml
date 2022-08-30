@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<db:config name="Database_Config2" doc:name="Database Config" doc:id="a331e969-aace-4906-b443-b76f5f3c0003" >
+		<db:my-sql-connection host="congo.c3w6upfzlwwe.us-west-1.rds.amazonaws.com" port="3306" user="mulesoft" password="mulesoft" database="congo" />
+	</db:config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="a8e858a2-db6f-4311-9dc9-2417a9889275" />
+	<flow name="db-to-sfdb-migrationFlow" doc:id="fc437833-b9ef-41e7-ae2c-38f907ecd4fc" >
+		<http:listener doc:name="Listener" doc:id="992cbc15-f19f-4032-be2c-7331ccd33742" config-ref="HTTP_Listener_config" path="dbmigration"/>
+		<db:select doc:name="Select" doc:id="e23c866b-8249-463b-82bc-024ad2172c0c" config-ref="Database_Config2">
+			<db:sql ><![CDATA[select * from contacts]]></db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="9e7555c2-7666-4b60-b091-3821b7e37dd2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map (item, index) -> {
+	
+	FirstName: item.FirstName,
+	LastName: item.LastName,
+	Email: item.Email,
+	Company: item.Company
+
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="481fd6cf-1f2a-49a8-9eb7-ad748a7671cb" >
+			<salesforce:create doc:name="Create" doc:id="010610f5-248e-4a70-b6ae-d25fdb903bab" config-ref="Salesforce_Config" type="Lead">
+				<salesforce:records ><![CDATA[#[[payload]]]]></salesforce:records>
+			</salesforce:create>
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="9bcb5103-3ff2-4b0a-ad6b-922ec6c19a07" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="db-to-sfdb-migrationFlow1" doc:id="a00638ae-26e1-41d5-85ea-8e0c417c02c9" >
+		<salesforce:modified-object-listener doc:name="On Modified Object" doc:id="019ee7be-e212-4525-bf8f-8dba25d791c4" config-ref="Salesforce_Config" objectType="Lead">
+			<scheduling-strategy >
+				<fixed-frequency />
+			</scheduling-strategy>
+		</salesforce:modified-object-listener>
+		<ee:transform doc:name="Transform Message" doc:id="81431da2-3aff-44f5-a418-d7b94f9f23e1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[payload] map {
+	"FirstName": payload.FirstName,
+	"LastName": payload.LastName,
+	"Company": payload.Company,
+	"Email": payload.Email
+
+} ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="23c30bc8-68a9-4d0c-8aa8-282705c59181" >
+			<route >
+				<file:write doc:name="Write" doc:id="618fd58e-b6d3-440a-9db0-c2edefa19d8a" config-ref="File_Config" path="/Users/danieladugna/Working Files/5. Mule Files/1. Salesforce/Lead1.csv" mode="APPEND">
+					<file:content ><![CDATA[#[%dw 2.0
+
+output application/csv header = false, headerLineNumber = 0
+---
+payload map (payload01, indexOfPayload01) -> {
+	FirstName: payload01.FirstName as String,
+	Lastname: payload01.LastName as String,
+	Company: payload01.Company as String,
+	Email: payload01.Email as String
+		}]]]></file:content>
+				</file:write>
+			</route>
+			<route >
+				<file:write doc:name="Write" doc:id="4883ff8a-30fb-4bcc-9ed8-69a2de2e0442" config-ref="File_Config" path="/Users/danieladugna/Working Files/5. Mule Files/1. Salesforce/Lead2.csv" mode="APPEND">
+					<file:content ><![CDATA[#[%dw 2.0
+
+output application/csv header = false, headerLineNumber = 0
+---
+payload map (payload01, indexOfPayload01) -> {
+	FirstName: payload01.FirstName as String,
+	Lastname: payload01.LastName as String,
+	Company: payload01.Company as String,
+	Email: payload01.Email as String
+		}]]]></file:content>
+				</file:write>
+			</route>
+		</scatter-gather>
+		<logger level="INFO" doc:name="Logger" doc:id="b89d5eb8-f7ca-40c4-a134-74eb3d0826f6" message="Successfully Created both CSV"/>
+	</flow>
+</mule>

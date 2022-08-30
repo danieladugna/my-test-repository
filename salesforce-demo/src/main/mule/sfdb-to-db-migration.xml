@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="808be661-f7ca-4e86-ae27-3471d2bb0154" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Thomas11610" database="salesforceintegration" />
+	</db:config>
+	<flow name="sfdb-to-db-migrationFlow" doc:id="b924428a-8586-4444-9a67-d870efbb0d97" >
+		<http:listener doc:name="Listener" doc:id="aab57bb9-fca8-481d-8b54-b68785d7ca13" config-ref="HTTP_Listener_config" path="migration"/>
+		<salesforce:query doc:name="Query" doc:id="9be9f772-a73a-42e8-9687-9ca6243fb58a" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[Select Name from Account]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<foreach doc:name="For Each" doc:id="cc9baa7c-d8d3-4e91-b2fc-8112bfd0670c" >
+			<set-payload value="#[payload.Name as String]" doc:name="Set Payload" doc:id="95085778-6d2c-4825-9433-1cefa76ad942" />
+			<db:insert doc:name="Insert" doc:id="b29eb5e9-a8d2-4b95-bf67-c688bc487244" config-ref="Database_Config">
+				<db:sql ><![CDATA[insert into accountsync (name)
+values (:Name)]]></db:sql>
+				<db:input-parameters ><![CDATA[#[{
+Name: payload
+}]]]></db:input-parameters>
+			</db:insert>
+			<logger level="INFO" doc:name="Logger" doc:id="a1f76e3f-38ea-4183-a402-c49bb73a2cd9" message="Created Successfully"/>
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="1eb02282-80b7-4634-92cd-fea85494380a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
